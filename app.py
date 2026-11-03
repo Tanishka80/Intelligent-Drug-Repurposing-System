@@ -171,7 +171,7 @@ except Exception as e:
 # ── Hero Section ─────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="hero-container">
-    <div class="badge">BTech Final-Year Project · Biomedical AI</div>
+    <div class="badge">MedNex</div>
     <h1 class="hero-title">💊 Intelligent Drug Repurposing<br>Research Assistant</h1>
     <p class="hero-subtitle">
         Discover potential new uses for existing drugs by analysing molecular targets
