@@ -135,11 +135,36 @@ html, body, [class*="css"] {
 """, unsafe_allow_html=True)
 
 # ── Load data (cached) ───────────────────────────────────────────────────────
+# Community Cloud starts with a clean filesystem, so prepare the ignored dataset
+# automatically on first launch when it is not already present.
+import subprocess
+import sys
+from pathlib import Path
+
+DATA_DIR = Path(__file__).parent / "data"
+NODES_FILE = DATA_DIR / "hetionet-v1.0-nodes.tsv"
+EDGES_FILE = DATA_DIR / "edges_filtered.tsv"
+
 try:
+    if not NODES_FILE.exists() or not EDGES_FILE.exists():
+        with st.spinner("Preparing the Hetionet biomedical dataset for first launch. This may take several minutes..."):
+            setup_result = subprocess.run(
+                [sys.executable, str(Path(__file__).parent / "setup_data.py")],
+                cwd=str(Path(__file__).parent),
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+        if setup_result.returncode != 0:
+            raise RuntimeError(
+                "Dataset setup failed. " +
+                (setup_result.stderr[-3000:] or setup_result.stdout[-3000:])
+            )
+
     from src.data_loader import get_dataset_stats
     stats = get_dataset_stats()
     data_loaded = True
-except FileNotFoundError as e:
+except Exception as e:
     data_loaded = False
     data_error = str(e)
 
@@ -159,8 +184,7 @@ st.markdown("""
 if not data_loaded:
     st.error(
         "**Data files not found.**\n\n"
-        "Please run the setup script before launching the application:\n\n"
-        "```\npython setup_data.py\n```",
+        f"Automatic dataset preparation could not complete: {data_error}",
         icon="⚠️",
     )
     st.stop()
